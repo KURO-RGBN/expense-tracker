@@ -711,7 +711,7 @@ fun HomeTab(
         remember { mutableStateOf(0f) }
     }
 
-    val bottomPadding = 64.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val bottomPadding = 96.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -1295,7 +1295,7 @@ fun AnalyticsTab(
         Color(0xFFEF4444)
     )
 
-    val bottomPadding = 64.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val bottomPadding = 96.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -1685,7 +1685,16 @@ fun AnalyticsTab(
             item {
                 val (thisMonthSpent, projected, predictedSavings) = monthlyProjection
                 val isOnTrack = predictedSavings >= 0
-                val progressFraction = if (budgetLimit > 0) (thisMonthSpent / budgetLimit).toFloat().coerceIn(0f, 1f) else 0f
+                
+                val cal = java.util.Calendar.getInstance()
+                val currentDayOfMonth = cal.get(java.util.Calendar.DAY_OF_MONTH)
+                val dailyRate = if (currentDayOfMonth > 0) thisMonthSpent / currentDayOfMonth else 0.0
+
+                // Redesigned visual progress scale logic
+                val totalScale = maxOf(budgetLimit, projected)
+                val actualFraction = if (totalScale > 0) (thisMonthSpent / totalScale).toFloat().coerceIn(0f, 1f) else 0f
+                val projectedFraction = if (totalScale > 0) (projected / totalScale).toFloat().coerceIn(0f, 1f) else 0f
+                val budgetFraction = if (totalScale > 0) (budgetLimit / totalScale).toFloat().coerceIn(0f, 1f) else 0f
 
                 Card(
                     shape = RoundedCornerShape(28.dp),
@@ -1695,6 +1704,7 @@ fun AnalyticsTab(
                         .padding(bottom = 16.dp)
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
+                        // Title & Icon Header
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(
                                 modifier = Modifier
@@ -1703,97 +1713,284 @@ fun AnalyticsTab(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
-                                    if (isOnTrack) Icons.Rounded.Savings else Icons.Rounded.Warning,
+                                    imageVector = if (isOnTrack) Icons.Rounded.Savings else Icons.Rounded.Warning,
                                     contentDescription = null,
                                     tint = if (isOnTrack) TextPrimary else PrimaryAccent,
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
                             Spacer(modifier = Modifier.width(12.dp))
-                            Text("Monthly Forecast", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = TextPrimary)
-                        }
-                        Spacer(modifier = Modifier.height(20.dp))
-
-                        // Budget progress bar
-                        Column {
-                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                Text("Spent this month", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                            Column {
                                 Text(
-                                    "৳${String.format(Locale.US, "%,.0f", thisMonthSpent)} / ৳${String.format(Locale.US, "%,.0f", budgetLimit)}",
-                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                                    text = "Monthly Spending Forecast", 
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), 
                                     color = TextPrimary
                                 )
+                                Text(
+                                    text = "Est. month-end spend based on your daily speed",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = TextSecondary
+                                )
                             }
-                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                        
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // Visual Progress Gauge (Double-segment progress bar)
+                        Column {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(), 
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.Bottom
+                            ) {
+                                Text(
+                                    text = "Actual Spend (So Far)", 
+                                    style = MaterialTheme.typography.labelSmall, 
+                                    color = TextSecondary
+                                )
+                                Text(
+                                    text = "৳${String.format(Locale.US, "%,.0f", thisMonthSpent)}",
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                    color = if (isOnTrack) TextPrimary else PrimaryAccent
+                                )
+                            }
+                            
+                            Spacer(modifier = Modifier.height(10.dp))
+                            
+                            // Visual Stack (Track -> Forecast Extension -> Actual -> Limit Line Marker)
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(10.dp)
-                                    .background(ThemeBackground, RoundedCornerShape(5.dp))
+                                    .height(20.dp),
+                                contentAlignment = Alignment.CenterStart
                             ) {
+                                // Background Track
                                 Box(
                                     modifier = Modifier
-                                        .fillMaxWidth(fraction = progressFraction)
-                                        .height(10.dp)
-                                        .background(
-                                            color = if (isOnTrack) TextPrimary else PrimaryAccent,
-                                            shape = RoundedCornerShape(5.dp)
-                                        )
+                                        .fillMaxWidth()
+                                        .height(8.dp)
+                                        .background(ThemeBackground, RoundedCornerShape(4.dp))
                                 )
+                                // Lighter/Translucent forecasted segment
+                                if (projectedFraction > 0f) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth(fraction = projectedFraction)
+                                            .height(8.dp)
+                                            .background(
+                                                color = if (isOnTrack) TextPrimary.copy(alpha = 0.15f) else PrimaryAccent.copy(alpha = 0.2f),
+                                                shape = RoundedCornerShape(4.dp)
+                                            )
+                                    )
+                                }
+                                // Solid actual spent segment
+                                if (actualFraction > 0f) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth(fraction = actualFraction)
+                                            .height(8.dp)
+                                            .background(
+                                                color = if (isOnTrack) TextPrimary else PrimaryAccent,
+                                                shape = RoundedCornerShape(4.dp)
+                                            )
+                                    )
+                                }
+                                // Budget threshold vertical marker line
+                                if (budgetFraction > 0f) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth(fraction = budgetFraction)
+                                            .height(20.dp),
+                                        contentAlignment = Alignment.CenterEnd
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .width(2.dp)
+                                                .height(16.dp)
+                                                .background(if (isOnTrack) TextSecondary else PrimaryAccent)
+                                        )
+                                    }
+                                }
+                            }
+                            
+                            Spacer(modifier = Modifier.height(6.dp))
+
+                            // Bottom Labels for Progress Bar
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = "0",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = TextSecondary
+                                )
+                                Text(
+                                    text = "Monthly Budget Limit: ৳${String.format(Locale.US, "%,.0f", budgetLimit)}",
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                                    color = TextSecondary
+                                )
+                            }
+                            
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // Visual legend explaining the bar components
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(width = 10.dp, height = 6.dp)
+                                            .background(if (isOnTrack) TextPrimary else PrimaryAccent, RoundedCornerShape(1.dp))
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("Spent", style = MaterialTheme.typography.labelSmall, color = TextSecondary, fontSize = 9.sp)
+                                }
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(width = 10.dp, height = 6.dp)
+                                            .background(if (isOnTrack) TextPrimary.copy(alpha = 0.2f) else PrimaryAccent.copy(alpha = 0.25f), RoundedCornerShape(1.dp))
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("Forecasted", style = MaterialTheme.typography.labelSmall, color = TextSecondary, fontSize = 9.sp)
+                                }
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(width = 2.dp, height = 8.dp)
+                                            .background(if (isOnTrack) TextSecondary else PrimaryAccent)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("Budget Wall", style = MaterialTheme.typography.labelSmall, color = TextSecondary, fontSize = 9.sp)
+                                }
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(24.dp))
 
-                        // Projected & Savings row
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
+                        // Stats Breakdown Row (Daily speed, projected total, expected savings/overrun)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(ThemeBackground, RoundedCornerShape(16.dp))
+                                .padding(vertical = 12.dp, horizontal = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // Column 1: Daily Pace
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Speed,
+                                    contentDescription = "Pace",
+                                    tint = TextSecondary,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    "৳${String.format(Locale.US, "%,.0f", projected)}",
-                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                    text = "৳${String.format(Locale.US, "%,.0f", dailyRate)} / day",
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                                     color = TextPrimary
                                 )
-                                Text("Projected", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
-                            }
-                            Box(modifier = Modifier.width(1.dp).height(40.dp).background(ThemeBackground))
-                            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
                                 Text(
-                                    "${if (predictedSavings >= 0) "+" else ""}৳${String.format(Locale.US, "%,.0f", predictedSavings)}",
-                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                    text = "Daily Pace",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = TextSecondary
+                                )
+                            }
+                            
+                            Box(modifier = Modifier.width(1.dp).height(32.dp).background(CardSurface))
+
+                            // Column 2: Projected Total Spend
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.CalendarMonth,
+                                    contentDescription = "Projected Spend",
+                                    tint = TextSecondary,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "৳${String.format(Locale.US, "%,.0f", projected)}",
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                                     color = if (isOnTrack) TextPrimary else PrimaryAccent
                                 )
                                 Text(
-                                    if (isOnTrack) "Predicted Savings" else "Over Budget",
+                                    text = "Est. Month End",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = TextSecondary
+                                )
+                            }
+                            
+                            Box(modifier = Modifier.width(1.dp).height(32.dp).background(CardSurface))
+
+                            // Column 3: Expected Outcome (Savings / Overrun)
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(
+                                    imageVector = if (isOnTrack) Icons.Rounded.Savings else Icons.Rounded.Warning,
+                                    contentDescription = "Outcome",
+                                    tint = if (isOnTrack) TextSecondary else PrimaryAccent,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "${if (isOnTrack) "+" else "-"}৳${String.format(Locale.US, "%,.0f", Math.abs(predictedSavings))}",
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                    color = if (isOnTrack) TextPrimary else PrimaryAccent
+                                )
+                                Text(
+                                    text = if (isOnTrack) "Est. Savings" else "Est. Overrun",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = TextSecondary
                                 )
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(20.dp))
 
-                        // Advice text
-                        Surface(
-                            color = ThemeBackground,
-                            shape = RoundedCornerShape(12.dp)
+                        // Actionable Advice Banner
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    color = if (isOnTrack) TextPrimary.copy(alpha = 0.05f) else PrimaryAccent.copy(alpha = 0.08f),
+                                    shape = RoundedCornerShape(16.dp)
+                                )
+                                .border(
+                                    width = 1.dp,
+                                    color = if (isOnTrack) TextPrimary.copy(alpha = 0.1f) else PrimaryAccent.copy(alpha = 0.15f),
+                                    shape = RoundedCornerShape(16.dp)
+                                )
+                                .padding(14.dp)
                         ) {
                             Row(
-                                modifier = Modifier.padding(12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
-                                    if (isOnTrack) Icons.Rounded.CheckCircle else Icons.Rounded.Info,
+                                    imageVector = if (isOnTrack) Icons.Rounded.CheckCircle else Icons.Rounded.Error,
                                     contentDescription = null,
                                     tint = if (isOnTrack) TextPrimary else PrimaryAccent,
-                                    modifier = Modifier.size(18.dp)
+                                    modifier = Modifier.size(20.dp)
                                 )
-                                Spacer(modifier = Modifier.width(8.dp))
+                                Spacer(modifier = Modifier.width(10.dp))
                                 Text(
                                     text = if (isOnTrack)
-                                        "You're on track to save ৳${String.format(Locale.US, "%,.0f", predictedSavings)} this month. Keep it up!"
+                                        "At this daily pace, you'll stay under budget and save ৳${String.format(Locale.US, "%,.0f", predictedSavings)} this month."
                                     else
-                                        "At this pace, you'll exceed your budget by ৳${String.format(Locale.US, "%,.0f", -predictedSavings)}. Consider cutting back.",
-                                    style = MaterialTheme.typography.bodySmall,
+                                        "Warning: You're spending too fast! At this pace, you'll exceed your budget by ৳${String.format(Locale.US, "%,.0f", -predictedSavings)}.",
+                                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
                                     color = if (isOnTrack) TextPrimary else PrimaryAccent
                                 )
                             }
@@ -2293,7 +2490,7 @@ fun HistoryTab(
             }
         }
 
-        val bottomPadding = 64.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+        val bottomPadding = 96.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
         LazyColumn(
             modifier = Modifier.fillMaxWidth().weight(1f),
             contentPadding = PaddingValues(bottom = bottomPadding)
@@ -2388,7 +2585,7 @@ fun ProfileTab(
         )
     }
 
-    val bottomPadding = 64.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val bottomPadding = 96.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
