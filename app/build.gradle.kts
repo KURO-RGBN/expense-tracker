@@ -12,7 +12,7 @@ android {
 
   defaultConfig {
     applicationId = "com.aistudio.expensetracker.klpqxy"
-    minSdk = 24
+    minSdk = 26
     targetSdk = 36
     versionCode = 1
     versionName = "1.0"
@@ -59,6 +59,11 @@ android {
     resources {
       excludes += "/META-INF/{AL2.0,LGPL2.1}"
       excludes += "META-INF/DEPENDENCIES"
+      excludes += "META-INF/LICENSE"
+      excludes += "META-INF/NOTICE"
+      excludes += "META-INF/NOTICE.txt"
+      excludes += "META-INF/LICENSE.txt"
+      excludes += "META-INF/LICENSE-notice.md"
     }
   }
   testOptions { unitTests { isIncludeAndroidResources = true } }
@@ -136,4 +141,8 @@ dependencies {
   debugImplementation(libs.androidx.compose.ui.tooling)
   "ksp"(libs.androidx.room.compiler)
   "ksp"(libs.moshi.kotlin.codegen)
+
+  // Excel Import/Export
+  implementation("org.apache.poi:poi:5.2.3")
+  implementation("org.apache.poi:poi-ooxml:5.2.3")
 }

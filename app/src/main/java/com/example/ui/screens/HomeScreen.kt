@@ -69,6 +69,10 @@ import com.example.ui.components.GlassBox
 import com.example.ui.components.SimpleBarChart
 import com.example.ui.components.SmoothLineChart
 import com.example.ui.theme.*
+import com.example.data.ExcelHelper
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -153,13 +157,29 @@ fun HomeScreen(viewModel: MainViewModel, activity: FragmentActivity) {
         "android.permission.READ_EXTERNAL_STORAGE"
     }
 
+    var pendingPermissionAction by remember { mutableStateOf<(() -> Unit)?>(null) }
+
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
-            imagePickerLauncher.launch("image/*")
+            pendingPermissionAction?.invoke()
         } else {
-            Toast.makeText(context, "Storage permission is required to select a photo", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Storage permission is required to access files", Toast.LENGTH_SHORT).show()
+        }
+        pendingPermissionAction = null
+    }
+
+    val requestStoragePermission = { actionOnSuccess: () -> Unit ->
+        val permissionCheck = androidx.core.content.ContextCompat.checkSelfPermission(
+            context,
+            permissionToRequest
+        )
+        if (permissionCheck == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            actionOnSuccess()
+        } else {
+            pendingPermissionAction = actionOnSuccess
+            permissionLauncher.launch(permissionToRequest)
         }
     }
 
@@ -224,21 +244,21 @@ fun HomeScreen(viewModel: MainViewModel, activity: FragmentActivity) {
                 )
                 "history" -> HistoryTab(
                     expenses = expenses,
-                    onDeleteExpense = { viewModel.deleteExpense(it) }
+                    onDeleteExpense = { viewModel.deleteExpense(it) },
+                    onImportExpenses = { importedList, callback ->
+                        viewModel.importExpenses(importedList, callback)
+                    },
+                    onRequestStoragePermission = { action ->
+                        requestStoragePermission(action)
+                    }
                 )
                 "profile" -> ProfileTab(
                     viewModel = viewModel,
                     userName = userName,
                     profileImageBitmap = profileImageBitmap,
                     onUploadImageClick = {
-                        val permissionCheck = androidx.core.content.ContextCompat.checkSelfPermission(
-                            context,
-                            permissionToRequest
-                        )
-                        if (permissionCheck == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                        requestStoragePermission {
                             imagePickerLauncher.launch("image/*")
-                        } else {
-                            permissionLauncher.launch(permissionToRequest)
                         }
                     },
                     onUpdateName = { name -> viewModel.updateUserName(name) },
@@ -257,7 +277,7 @@ fun HomeScreen(viewModel: MainViewModel, activity: FragmentActivity) {
                 .fillMaxWidth()
                 .background(Color.Transparent) // Explicitly transparent wrapper background
                 .navigationBarsPadding()
-                .padding(bottom = 0.dp, start = 16.dp, end = 16.dp),
+                .padding(bottom = 16.dp, start = 16.dp, end = 16.dp),
             contentAlignment = Alignment.Center
         ) {
             Row(
@@ -711,7 +731,7 @@ fun HomeTab(
         remember { mutableStateOf(0f) }
     }
 
-    val bottomPadding = 96.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val bottomPadding = 112.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -1295,7 +1315,7 @@ fun AnalyticsTab(
         Color(0xFFEF4444)
     )
 
-    val bottomPadding = 96.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val bottomPadding = 112.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -2118,8 +2138,77 @@ private fun InsightRow(
 @Composable
 fun HistoryTab(
     expenses: List<Expense>,
-    onDeleteExpense: (Int) -> Unit
+    onDeleteExpense: (Int) -> Unit,
+    onImportExpenses: (List<Expense>, (Boolean, Int) -> Unit) -> Unit,
+    onRequestStoragePermission: (() -> Unit) -> Unit
 ) {
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+    var showImportGuide by remember { mutableStateOf(false) }
+    var isImporting by remember { mutableStateOf(false) }
+
+    val importLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            isImporting = true
+            coroutineScope.launch(Dispatchers.IO) {
+                try {
+                    context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                        val importedList = ExcelHelper.importExpenses(inputStream)
+                        withContext(Dispatchers.Main) {
+                            onImportExpenses(importedList) { success, count ->
+                                isImporting = false
+                                if (success) {
+                                    Toast.makeText(context, "Successfully imported $count records!", Toast.LENGTH_LONG).show()
+                                } else {
+                                    Toast.makeText(context, "Failed to save imported expenses.", Toast.LENGTH_LONG).show()
+                                }
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        isImporting = false
+                        Toast.makeText(context, "Error: ${e.localizedMessage ?: "Invalid file or structure"}", Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+        }
+    }
+
+    val exportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/vnd.ms-excel")
+    ) { uri: Uri? ->
+        if (uri != null) {
+            coroutineScope.launch(Dispatchers.IO) {
+                try {
+                    context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                        ExcelHelper.exportExpenses(outputStream, expenses)
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(context, "Exported successfully!", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "Export failed: ${e.localizedMessage ?: "Unknown error"}", Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+        }
+    }
+
+    if (showImportGuide) {
+        ExcelImportGuideDialog(
+            onDismiss = { showImportGuide = false },
+            onChooseFile = {
+                onRequestStoragePermission {
+                    importLauncher.launch("*/*")
+                }
+            }
+        )
+    }
+
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("All") }
     var sortBy by remember { mutableStateOf("date_desc") } // "date_desc", "date_asc", "amount_desc", "amount_asc"
@@ -2200,8 +2289,80 @@ fun HistoryTab(
             text = "Filter, search, and review your logs.",
             style = MaterialTheme.typography.bodyMedium,
             color = TextSecondary,
-            modifier = Modifier.padding(bottom = 16.dp)
+            modifier = Modifier.padding(bottom = 4.dp)
         )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp, top = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Import Logs Button
+            Button(
+                onClick = { showImportGuide = true },
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = PrimaryAccent,
+                    contentColor = Color.White
+                ),
+                contentPadding = PaddingValues(vertical = 10.dp)
+            ) {
+                if (isImporting) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.UploadFile,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Import Logs", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    }
+                }
+            }
+
+            // Export Logs Button
+            Button(
+                onClick = {
+                    if (expenses.isEmpty()) {
+                        Toast.makeText(context, "No transactions to export", Toast.LENGTH_SHORT).show()
+                    } else {
+                        exportLauncher.launch("expenses_export.xls")
+                    }
+                },
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = CardSurface,
+                    contentColor = TextPrimary
+                ),
+                contentPadding = PaddingValues(vertical = 10.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Download,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                        tint = PrimaryAccent
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Export Logs", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = TextPrimary)
+                }
+            }
+        }
 
         OutlinedTextField(
             value = searchQuery,
@@ -2490,7 +2651,7 @@ fun HistoryTab(
             }
         }
 
-        val bottomPadding = 96.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+        val bottomPadding = 112.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
         LazyColumn(
             modifier = Modifier.fillMaxWidth().weight(1f),
             contentPadding = PaddingValues(bottom = bottomPadding)
@@ -2519,6 +2680,181 @@ fun HistoryTab(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun ExcelImportGuideDialog(
+    onDismiss: () -> Unit,
+    onChooseFile: () -> Unit
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = ThemeBackground
+            ),
+            modifier = Modifier
+                .padding(16.dp)
+                .border(1.dp, CardSurface, RoundedCornerShape(24.dp))
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Description,
+                        contentDescription = null,
+                        tint = PrimaryAccent,
+                        modifier = Modifier.size(28.dp)
+                    )
+                    Text(
+                        text = "Excel Import Guide",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = TextPrimary
+                        )
+                    )
+                }
+
+                Text(
+                    text = "To import your transactions, your Excel (.xls or .xlsx) file must be structured as follows:",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSecondary
+                )
+
+                // Mock visual representation of the Excel sheet columns
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(CardSurface, RoundedCornerShape(12.dp))
+                        .padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Header Row representation
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        listOf("Date", "Category", "Description", "Amount").forEach { header ->
+                            Text(
+                                text = header,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .background(PrimaryAccent.copy(alpha = 0.15f), RoundedCornerShape(4.dp))
+                                    .padding(vertical = 4.dp, horizontal = 2.dp),
+                                textAlign = TextAlign.Center,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = PrimaryAccent
+                            )
+                        }
+                    }
+                    
+                    // Sample Data Row 1
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        listOf("2026-06-22", "Food", "Lunch with team", "1250.0").forEach { valStr ->
+                            Text(
+                                text = valStr,
+                                modifier = Modifier.weight(1f).padding(vertical = 2.dp),
+                                textAlign = TextAlign.Center,
+                                fontSize = 10.sp,
+                                color = TextPrimary
+                            )
+                        }
+                    }
+                    
+                    // Divider
+                    Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(TextSecondary.copy(alpha = 0.1f)))
+
+                    // Sample Data Row 2
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        listOf("2026-06-21", "Bills", "Electricity Bill", "4500.0").forEach { valStr ->
+                            Text(
+                                text = valStr,
+                                modifier = Modifier.weight(1f).padding(vertical = 2.dp),
+                                textAlign = TextAlign.Center,
+                                fontSize = 10.sp,
+                                color = TextPrimary
+                            )
+                        }
+                    }
+                }
+
+                // Instructions points
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(vertical = 4.dp)
+                ) {
+                    BulletPoint("Columns must include: Date, Category, Description, and Amount (headers are case-insensitive).")
+                    BulletPoint("Supported Date Formats: YYYY-MM-DD, YYYY-MM-DD HH:mm:ss, DD/MM/YYYY, or Excel date cell format.")
+                    BulletPoint("Amount must be a positive number greater than 0.")
+                    BulletPoint("Empty rows or rows with invalid values are skipped automatically.")
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(
+                        onClick = onDismiss,
+                        colors = ButtonDefaults.textButtonColors(contentColor = TextSecondary)
+                    ) {
+                        Text("Cancel", fontWeight = FontWeight.SemiBold)
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Button(
+                        onClick = {
+                            onDismiss()
+                            onChooseFile()
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = PrimaryAccent,
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Icon(Icons.Rounded.UploadFile, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Upload File", fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun BulletPoint(text: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        Text(
+            text = "•",
+            color = PrimaryAccent,
+            fontWeight = FontWeight.Bold,
+            fontSize = 14.sp
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodySmall,
+            color = TextSecondary,
+            lineHeight = 16.sp
+        )
     }
 }
 
@@ -2585,7 +2921,7 @@ fun ProfileTab(
         )
     }
 
-    val bottomPadding = 96.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val bottomPadding = 112.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()

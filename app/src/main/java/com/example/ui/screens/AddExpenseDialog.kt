@@ -94,7 +94,7 @@ fun AddExpenseDialog(
                 OutlinedTextField(
                     value = category,
                     onValueChange = { category = it },
-                    label = { Text("Category") },
+                    label = { Text("Enter Category") },
                     modifier = Modifier.fillMaxWidth().testTag("category_input"),
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(

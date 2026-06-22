@@ -152,6 +152,42 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun importExpenses(expensesToImport: List<Expense>, onComplete: (Boolean, Int) -> Unit) {
+        viewModelScope.launch {
+            try {
+                var importedCount = 0
+                expensesToImport.forEach { expense ->
+                    repository.insert(expense)
+                    importedCount++
+                }
+                
+                if (importedCount > 0) {
+                    NotificationHelper.triggerLiveNotification(
+                        getApplication(),
+                        "Import Complete",
+                        "Successfully imported $importedCount transaction logs."
+                    )
+                    
+                    val currentExpenses = expenses.value
+                    val newTotal = currentExpenses.sumOf { it.amount }
+                    val limit = budgetLimit.value
+                    if (newTotal > limit) {
+                        val formattedLimit = String.format(java.util.Locale.US, "%,.2f", limit)
+                        val formattedNewTotal = String.format(java.util.Locale.US, "%,.2f", newTotal)
+                        NotificationHelper.triggerLiveNotification(
+                            getApplication(),
+                            "Budget Overrun",
+                            "Alert: You have exceeded your budget limit of ৳$formattedLimit! Total spent is now ৳$formattedNewTotal."
+                        )
+                    }
+                }
+                onComplete(true, importedCount)
+            } catch (e: Exception) {
+                onComplete(false, 0)
+            }
+        }
+    }
+
     fun resetAllData() {
         viewModelScope.launch {
             // Wipes SQLite Room database tables
