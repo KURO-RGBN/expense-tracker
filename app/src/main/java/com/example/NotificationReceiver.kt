@@ -26,7 +26,6 @@ class NotificationReceiver : BroadcastReceiver() {
     private fun showNotification(context: Context, title: String, message: String) {
         val channelId = "expense_tracker_reminders"
         
-        // Create Notification Channel (required for API 26+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = "Reminders & Alerts"
             val descriptionText = "Notifications for expense tracking reminders and insights"
@@ -39,7 +38,6 @@ class NotificationReceiver : BroadcastReceiver() {
             notificationManager.createNotificationChannel(channel)
         }
 
-        // Click action intent
         val clickIntent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
@@ -51,7 +49,7 @@ class NotificationReceiver : BroadcastReceiver() {
         )
 
         val builder = NotificationCompat.Builder(context, channelId)
-            .setSmallIcon(android.R.drawable.ic_dialog_info) // Built-in platform drawable
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle(title)
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)

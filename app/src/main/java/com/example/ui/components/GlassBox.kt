@@ -20,7 +20,6 @@ fun GlassBox(
     isDark: Boolean = false,
     content: @Composable BoxScope.() -> Unit
 ) {
-    // Premium multi-stop linear gradients to simulate light reflecting off glass surface
     val backgroundBrush = if (isDark) {
         Brush.linearGradient(
             colors = listOf(
@@ -37,18 +36,17 @@ fun GlassBox(
         )
     }
 
-    // Dynamic edge highlighting
     val borderBrush = if (isDark) {
         Brush.linearGradient(
             colors = listOf(
-                Color(0x33FFFFFF), // Muted white edge
+                Color(0x33FFFFFF),
                 Color(0x0DFFFFFF)
             )
         )
     } else {
         Brush.linearGradient(
             colors = listOf(
-                Color(0x1A020203), // Muted near black edge
+                Color(0x1A020203),
                 Color(0x05020203)
             )
         )

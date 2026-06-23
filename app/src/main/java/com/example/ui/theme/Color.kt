@@ -10,26 +10,25 @@ val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
-// Modern Sophisticated Light Theme Colors (#F3F3F1, #EA3B35, #020203)
-val ThemeBackground = Color(0xFFF3F3F1)      // Soft off-white background
-val CardSurface = Color(0xFFE5E5E2)          // Soft grey/cream card surface
-val DarkCardSurface = Color(0xFF020203)      // Near Black card surface
+val ThemeBackground = Color(0xFFF3F3F1)
+val CardSurface = Color(0xFFE5E5E2)
+val DarkCardSurface = Color(0xFF020203)
 
-val TextPrimary = Color(0xFF020203)          // Near Black primary text
-val TextSecondary = Color(0xFF767677)        // Muted grey secondary text
-val DarkCardTextPrimary = Color(0xFFF3F3F1)  // Soft off-white text inside dark cards
-val DarkCardTextSecondary = Color(0xFFA1A1A4)// Muted grey text inside dark cards
+val TextPrimary = Color(0xFF020203)
+val TextSecondary = Color(0xFF767677)
+val DarkCardTextPrimary = Color(0xFFF3F3F1)
+val DarkCardTextSecondary = Color(0xFFA1A1A4)
 
-val IconBackground = Color(0xFFE5E5E2)       // Light gray icon background
-val DarkCardIconBackground = Color(0xFF2E2E33)// Dark icon background
+val IconBackground = Color(0xFFE5E5E2)
+val DarkCardIconBackground = Color(0xFF2E2E33)
 
-val LiquidAccentStart = Color(0xFFEA3B35)    // Vibrant Red primary accent
-val LiquidAccentEnd = Color(0xFFEA3B35)      // Solid Vibrant Red
+val LiquidAccentStart = Color(0xFFEA3B35)
+val LiquidAccentEnd = Color(0xFFEA3B35)
 
-// Chart Colors matching the serious, sophisticated theme
-val ChartGreen = Color(0xFFEA3B35)           // Accent Vibrant Red
-val ChartOrange = Color(0xFF020203)          // Near Black
-val ChartBlue = Color(0xFFEA3B35)            // Vibrant Red
-val ChartPink = Color(0xFF767677)            // Muted Zinc
-val ChartPurple = Color(0xFFE5E5E2)          // Soft grey
-val PrimaryAccent = Color(0xFFEA3B35)        // Vibrant Red
+
+val ChartGreen = Color(0xFFEA3B35)
+val ChartOrange = Color(0xFF020203)
+val ChartBlue = Color(0xFFEA3B35)
+val ChartPink = Color(0xFF767677)
+val ChartPurple = Color(0xFFE5E5E2)
+val PrimaryAccent = Color(0xFFEA3B35)

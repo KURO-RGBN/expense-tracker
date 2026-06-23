@@ -10,7 +10,7 @@ object NotificationHelper {
     fun scheduleDailyReminders(context: Context) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         
-        // Reminder 1: 12:00 PM
+
         val intent1 = Intent(context, NotificationReceiver::class.java).apply {
             putExtra("title", "Daily Budget Check")
             putExtra("message", "Time to log your morning expenses and stay on track!")
@@ -39,7 +39,7 @@ object NotificationHelper {
             pendingIntent1
         )
 
-        // Reminder 2: 8:00 PM
+
         val intent2 = Intent(context, NotificationReceiver::class.java).apply {
             putExtra("title", "Evening Budget Check")
             putExtra("message", "Don't forget to log your dinner and evening expenses!")

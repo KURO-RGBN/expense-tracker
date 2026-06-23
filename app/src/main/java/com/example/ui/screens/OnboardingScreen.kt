@@ -33,7 +33,7 @@ import com.example.MainViewModel
 import com.example.ui.components.GlassBox
 import com.example.ui.theme.*
 
-// Illustration 1: Explore (Isometric portal & floating elements) - Responsively Scaled
+
 @Composable
 fun ExploreIllustration(modifier: Modifier = Modifier) {
     val infiniteTransition = rememberInfiniteTransition(label = "explore")
@@ -54,27 +54,27 @@ fun ExploreIllustration(modifier: Modifier = Modifier) {
         val centerX = w / 2
         val centerY = h / 2
         
-        // Ground shadow
+
         drawOval(
             color = Color.LightGray.copy(alpha = 0.35f),
             topLeft = Offset(centerX - scale * 0.3f, centerY + scale * 0.25f),
             size = Size(scale * 0.6f, scale * 0.1f)
         )
         
-        // Isometric Archway Outlines
-        // Left pillar
+
+
         drawRect(
             color = Color(0xFF1E1E1E),
             topLeft = Offset(centerX - scale * 0.2f, centerY - scale * 0.3f),
             size = Size(scale * 0.06f, scale * 0.55f)
         )
-        // Right pillar
+
         drawRect(
             color = Color(0xFF1E1E1E),
             topLeft = Offset(centerX + scale * 0.14f, centerY - scale * 0.3f),
             size = Size(scale * 0.06f, scale * 0.55f)
         )
-        // Arch top outline
+
         drawArc(
             color = Color(0xFF1E1E1E),
             startAngle = 180f,
@@ -84,7 +84,7 @@ fun ExploreIllustration(modifier: Modifier = Modifier) {
             size = Size(scale * 0.4f, scale * 0.12f)
         )
         
-        // Glowing portal interior
+
         val portalPath = androidx.compose.ui.graphics.Path().apply {
             moveTo(centerX - scale * 0.14f, centerY + scale * 0.25f)
             lineTo(centerX - scale * 0.14f, centerY - scale * 0.24f)
@@ -94,24 +94,24 @@ fun ExploreIllustration(modifier: Modifier = Modifier) {
         }
         drawPath(
             path = portalPath,
-            color = Color(0xFFEA3B35) // OrangeAccent
+            color = Color(0xFFEA3B35)
         )
         
-        // Portal black hole center
+
         drawOval(
             color = Color(0xFF0C0C0C),
             topLeft = Offset(centerX - scale * 0.08f, centerY - scale * 0.1f),
             size = Size(scale * 0.16f, scale * 0.3f)
         )
         
-        // Floating orange sun
+
         drawCircle(
             color = Color(0xFFEA3B35),
             radius = scale * 0.07f,
             center = Offset(centerX + scale * 0.28f, centerY - scale * 0.4f + (scale * floatOffset))
         )
         
-        // Isometric steps leading to portal
+
         for (i in 0..2) {
             val stepY = centerY + scale * 0.25f + (i * scale * 0.04f)
             val stepW = scale * 0.26f - (i * scale * 0.03f)
@@ -124,7 +124,7 @@ fun ExploreIllustration(modifier: Modifier = Modifier) {
     }
 }
 
-// Illustration 2: Discovery (Split opening head & floating cube) - Responsively Scaled
+
 @Composable
 fun DiscoveryIllustration(modifier: Modifier = Modifier) {
     val infiniteTransition = rememberInfiniteTransition(label = "discovery")
@@ -154,14 +154,14 @@ fun DiscoveryIllustration(modifier: Modifier = Modifier) {
         val centerX = w / 2
         val centerY = h / 2
 
-        // Platform Shadow
+
         drawOval(
             color = Color.LightGray.copy(alpha = 0.4f),
             topLeft = Offset(centerX - scale * 0.35f, centerY + scale * 0.28f),
             size = Size(scale * 0.7f, scale * 0.1f)
         )
 
-        // Platform base
+
         val platformPath = androidx.compose.ui.graphics.Path().apply {
             moveTo(centerX - scale * 0.28f, centerY + scale * 0.2f)
             lineTo(centerX, centerY + scale * 0.1f)
@@ -171,7 +171,7 @@ fun DiscoveryIllustration(modifier: Modifier = Modifier) {
         }
         drawPath(platformPath, Color(0xFF1E1E1E))
 
-        // Platform Side depth
+
         val platformSidePath = androidx.compose.ui.graphics.Path().apply {
             moveTo(centerX - scale * 0.28f, centerY + scale * 0.2f)
             lineTo(centerX, centerY + scale * 0.3f)
@@ -183,7 +183,7 @@ fun DiscoveryIllustration(modifier: Modifier = Modifier) {
         }
         drawPath(platformSidePath, Color(0xFF0C0C0C))
 
-        // Orange head profile box
+
         val headPath = androidx.compose.ui.graphics.Path().apply {
             moveTo(centerX - scale * 0.14f, centerY + scale * 0.09f)
             lineTo(centerX - scale * 0.14f, centerY - scale * 0.09f)
@@ -195,7 +195,7 @@ fun DiscoveryIllustration(modifier: Modifier = Modifier) {
         }
         drawPath(headPath, Color(0xFFEA3B35))
         
-        // Interior outline
+
         val openingPath = androidx.compose.ui.graphics.Path().apply {
             moveTo(centerX - scale * 0.12f, centerY - scale * 0.07f)
             lineTo(centerX, centerY - scale * 0.14f)
@@ -205,7 +205,7 @@ fun DiscoveryIllustration(modifier: Modifier = Modifier) {
         }
         drawPath(openingPath, Color(0xFF1E1E1E))
 
-        // Floating rotating cube
+
         withTransform({
             translate(centerX, centerY - scale * 0.28f + (scale * floatOffset))
             rotate(rotation)
@@ -224,7 +224,7 @@ fun DiscoveryIllustration(modifier: Modifier = Modifier) {
     }
 }
 
-// Illustration 3: Create (Hourglass with dropping particles) - Responsively Scaled
+
 @Composable
 fun CreateIllustration(modifier: Modifier = Modifier) {
     val infiniteTransition = rememberInfiniteTransition(label = "create")
@@ -254,14 +254,14 @@ fun CreateIllustration(modifier: Modifier = Modifier) {
         val centerX = w / 2
         val centerY = h / 2
 
-        // Base shadow
+
         drawOval(
             color = Color.LightGray.copy(alpha = 0.4f),
             topLeft = Offset(centerX - scale * 0.28f, centerY + scale * 0.32f),
             size = Size(scale * 0.56f, scale * 0.1f)
         )
 
-        // Hourglass top lid
+
         val topLid = androidx.compose.ui.graphics.Path().apply {
             moveTo(centerX - scale * 0.2f, centerY - scale * 0.26f)
             lineTo(centerX, centerY - scale * 0.33f)
@@ -271,7 +271,7 @@ fun CreateIllustration(modifier: Modifier = Modifier) {
         }
         drawPath(topLid, Color(0xFF1E1E1E))
 
-        // Hourglass bottom lid
+
         val bottomLid = androidx.compose.ui.graphics.Path().apply {
             moveTo(centerX - scale * 0.2f, centerY + scale * 0.26f)
             lineTo(centerX, centerY + scale * 0.19f)
@@ -281,7 +281,7 @@ fun CreateIllustration(modifier: Modifier = Modifier) {
         }
         drawPath(bottomLid, Color(0xFF1E1E1E))
 
-        // Top bulb outline
+
         val topGlass = androidx.compose.ui.graphics.Path().apply {
             moveTo(centerX - 0.17f * scale, centerY - 0.22f * scale)
             lineTo(centerX + 0.17f * scale, centerY - 0.22f * scale)
@@ -290,7 +290,7 @@ fun CreateIllustration(modifier: Modifier = Modifier) {
         }
         drawPath(topGlass, Color.LightGray.copy(alpha = 0.25f))
 
-        // Bottom bulb outline
+
         val bottomGlass = androidx.compose.ui.graphics.Path().apply {
             moveTo(centerX - 0.17f * scale, centerY + 0.22f * scale)
             lineTo(centerX + 0.17f * scale, centerY + 0.22f * scale)
@@ -299,7 +299,7 @@ fun CreateIllustration(modifier: Modifier = Modifier) {
         }
         drawPath(bottomGlass, Color.LightGray.copy(alpha = 0.25f))
 
-        // Shrinking top sand triangle
+
         val topSand = androidx.compose.ui.graphics.Path().apply {
             moveTo(centerX - 0.11f * scale, centerY - 0.16f * scale)
             lineTo(centerX + 0.11f * scale, centerY - 0.16f * scale)
@@ -308,7 +308,7 @@ fun CreateIllustration(modifier: Modifier = Modifier) {
         }
         drawPath(topSand, Color(0xFFEA3B35))
 
-        // Growing bottom sand pile
+
         val bottomSand = androidx.compose.ui.graphics.Path().apply {
             moveTo(centerX - 0.13f * scale, centerY + 0.18f * scale)
             lineTo(centerX + 0.13f * scale, centerY + 0.18f * scale)
@@ -317,7 +317,7 @@ fun CreateIllustration(modifier: Modifier = Modifier) {
         }
         drawPath(bottomSand, Color(0xFFEA3B35))
 
-        // Dropping sand particles
+
         drawCircle(
             color = Color(0xFFEA3B35),
             radius = scale * 0.012f,
@@ -334,7 +334,7 @@ fun CreateIllustration(modifier: Modifier = Modifier) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OnboardingScreen(viewModel: MainViewModel, onOnboardingComplete: () -> Unit) {
-    var onboardingStep by remember { mutableStateOf(1) } // 1, 2, 3: Explanatory slides; 4: Info Setup form
+    var onboardingStep by remember { mutableStateOf(1) }
     var name by remember { mutableStateOf("") }
     var budget by remember { mutableStateOf("6000") }
     var enableBiometrics by remember { mutableStateOf(false) }
@@ -346,20 +346,20 @@ fun OnboardingScreen(viewModel: MainViewModel, onOnboardingComplete: () -> Unit)
             .background(if (onboardingStep < 4) Color.White else ThemeBackground)
     ) {
         if (onboardingStep < 4) {
-            // Draw background decorative shapes matching the screenshot
+
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val w = size.width
                 val h = size.height
                 
                 when (onboardingStep) {
                     1 -> {
-                        // Semicircle/arc at bottom-left corner
+
                         drawCircle(
                             color = Color(0xFFEA3B35),
                             radius = 180f,
                             center = Offset(0f, h)
                         )
-                        // Floating orange sphere top-right
+
                         drawCircle(
                             color = Color(0xFFEA3B35),
                             radius = 35f,
@@ -367,7 +367,7 @@ fun OnboardingScreen(viewModel: MainViewModel, onOnboardingComplete: () -> Unit)
                         )
                     }
                     2 -> {
-                        // Semicircle/arc at top-right corner
+
                         drawCircle(
                             color = Color(0xFFEA3B35),
                             radius = 140f,
@@ -375,7 +375,7 @@ fun OnboardingScreen(viewModel: MainViewModel, onOnboardingComplete: () -> Unit)
                         )
                     }
                     3 -> {
-                        // Large semicircle/arc at bottom-right corner
+
                         drawCircle(
                             color = Color(0xFFEA3B35),
                             radius = 200f,
@@ -385,7 +385,7 @@ fun OnboardingScreen(viewModel: MainViewModel, onOnboardingComplete: () -> Unit)
                 }
             }
 
-            // Slide Navigation content layout
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -394,7 +394,7 @@ fun OnboardingScreen(viewModel: MainViewModel, onOnboardingComplete: () -> Unit)
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                // Top header bar (e.g. Back button or empty space for symmetry)
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -415,7 +415,7 @@ fun OnboardingScreen(viewModel: MainViewModel, onOnboardingComplete: () -> Unit)
                         Spacer(modifier = Modifier.size(40.dp))
                     }
                     
-                    // Skip button to directly jump to profile setup
+
                     Text(
                         text = "Skip",
                         style = MaterialTheme.typography.labelLarge.copy(
@@ -428,7 +428,7 @@ fun OnboardingScreen(viewModel: MainViewModel, onOnboardingComplete: () -> Unit)
                     )
                 }
 
-                // Centered Illustration + Text block (illustrations increased to 300.dp and responsive)
+
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
@@ -447,7 +447,7 @@ fun OnboardingScreen(viewModel: MainViewModel, onOnboardingComplete: () -> Unit)
                         }
                     }
 
-                    // Redesigned UX Copy - Specific to Expense Tracking App functions
+
                     val titleText = when (onboardingStep) {
                         1 -> "TRACK"
                         2 -> "MONITOR"
@@ -484,7 +484,7 @@ fun OnboardingScreen(viewModel: MainViewModel, onOnboardingComplete: () -> Unit)
                     )
                 }
 
-                // Bottom Page Control and Navigation bar
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -493,7 +493,7 @@ fun OnboardingScreen(viewModel: MainViewModel, onOnboardingComplete: () -> Unit)
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     if (onboardingStep < 3) {
-                        // Dot indicators
+
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.CenterVertically
@@ -514,7 +514,7 @@ fun OnboardingScreen(viewModel: MainViewModel, onOnboardingComplete: () -> Unit)
                             }
                         }
 
-                        // Next arrow circle button
+
                         Box(
                             modifier = Modifier
                                 .size(56.dp)
@@ -531,7 +531,7 @@ fun OnboardingScreen(viewModel: MainViewModel, onOnboardingComplete: () -> Unit)
                             )
                         }
                     } else {
-                        // Full width capsule button for slide 3 "START TRACKING YOUR LIFE"
+
                         Button(
                             onClick = { onboardingStep = 4 },
                             modifier = Modifier
@@ -555,8 +555,8 @@ fun OnboardingScreen(viewModel: MainViewModel, onOnboardingComplete: () -> Unit)
                 }
             }
         } else {
-            // STEP 4: Setup User Profile Info Form (Original Glassmorphic Layout preserved!)
-            // Blurred Glassmorphic Background (zinc & red accents)
+
+
             Canvas(
                 modifier = Modifier
                     .fillMaxSize()
@@ -574,7 +574,7 @@ fun OnboardingScreen(viewModel: MainViewModel, onOnboardingComplete: () -> Unit)
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                // Back button to slide 3
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Start
@@ -591,7 +591,7 @@ fun OnboardingScreen(viewModel: MainViewModel, onOnboardingComplete: () -> Unit)
                     )
                 }
 
-                // Welcome Text
+
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "Welcome to",
@@ -618,7 +618,7 @@ fun OnboardingScreen(viewModel: MainViewModel, onOnboardingComplete: () -> Unit)
                     )
                 }
 
-                // Glassmorphic Input Setup Box
+
                 GlassBox(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -638,7 +638,7 @@ fun OnboardingScreen(viewModel: MainViewModel, onOnboardingComplete: () -> Unit)
                             color = TextPrimary
                         )
 
-                        // Name Input
+
                         OutlinedTextField(
                             value = name,
                             onValueChange = { name = it },
@@ -656,7 +656,7 @@ fun OnboardingScreen(viewModel: MainViewModel, onOnboardingComplete: () -> Unit)
                             )
                         )
 
-                        // Budget Input
+
                         OutlinedTextField(
                             value = budget,
                             onValueChange = { budget = it },
@@ -675,7 +675,7 @@ fun OnboardingScreen(viewModel: MainViewModel, onOnboardingComplete: () -> Unit)
                             )
                         )
 
-                        // Biometric Lock Toggle
+
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -722,7 +722,7 @@ fun OnboardingScreen(viewModel: MainViewModel, onOnboardingComplete: () -> Unit)
                     }
                 }
 
-                // Start Button
+
                 Button(
                     onClick = {
                         val finalName = name.ifEmpty { "User" }

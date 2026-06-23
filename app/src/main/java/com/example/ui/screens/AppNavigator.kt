@@ -15,7 +15,7 @@ fun AppNavigator(viewModel: MainViewModel, activity: FragmentActivity) {
     val biometricsEnabled by viewModel.biometricsEnabled.collectAsState()
     val isAuthenticated by viewModel.isAuthenticated.collectAsState()
 
-    // Determine startup destination based on security preference and first launch
+
     val startDestination = remember(isFirstLaunch, biometricsEnabled, isAuthenticated) {
         when {
             isFirstLaunch -> "onboarding"

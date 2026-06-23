@@ -133,11 +133,11 @@ fun HomeScreen(viewModel: MainViewModel, activity: FragmentActivity) {
         notificationsLastViewedTime == 0L || expenses.any { it.date > notificationsLastViewedTime }
     }
     
-    var currentTab by remember { mutableStateOf("home") } // "home", "history", "analytics", "profile"
+    var currentTab by remember { mutableStateOf("home") }
     var showAddDialog by remember { mutableStateOf(false) }
     var addDialogPrefillCategory by remember { mutableStateOf("Food") }
     
-    // Interactive features state
+
     var showChatAssistant by remember { mutableStateOf(false) }
     var showNotificationsDialog by remember { mutableStateOf(false) }
 
@@ -201,7 +201,7 @@ fun HomeScreen(viewModel: MainViewModel, activity: FragmentActivity) {
             .background(ThemeBackground)
     ) {
 
-        // Main Content View (100% height)
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -270,12 +270,12 @@ fun HomeScreen(viewModel: MainViewModel, activity: FragmentActivity) {
             }
         }
 
-        // Floating Bottom Navigation Bar (Overlay layer)
+
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .background(Color.Transparent) // Explicitly transparent wrapper background
+                .background(Color.Transparent)
                 .navigationBarsPadding()
                 .padding(bottom = 16.dp, start = 16.dp, end = 16.dp),
             contentAlignment = Alignment.Center
@@ -285,7 +285,7 @@ fun HomeScreen(viewModel: MainViewModel, activity: FragmentActivity) {
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Left/Center Navigation Capsule
+
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -295,7 +295,7 @@ fun HomeScreen(viewModel: MainViewModel, activity: FragmentActivity) {
                             shape = RoundedCornerShape(32.dp),
                             spotColor = Color.Black.copy(alpha = 0.15f)
                         )
-                        .background(DarkCardSurface, RoundedCornerShape(32.dp)) // Premium dark card surface capsule
+                        .background(DarkCardSurface, RoundedCornerShape(32.dp))
                         .padding(horizontal = 8.dp),
                     contentAlignment = Alignment.Center
                 ) {
@@ -314,7 +314,7 @@ fun HomeScreen(viewModel: MainViewModel, activity: FragmentActivity) {
                         tabs.forEach { (tabId, icon, label) ->
                             val isSelected = currentTab == tabId
                             
-                            // Custom scale/interaction for tab items
+
                             val itemInteractionSource = remember { MutableInteractionSource() }
                             val itemPressed by itemInteractionSource.collectIsPressedAsState()
                             val itemScale by animateFloatAsState(if (itemPressed) 0.92f else 1f, label = "tabItemScale")
@@ -327,7 +327,7 @@ fun HomeScreen(viewModel: MainViewModel, activity: FragmentActivity) {
                                     }
                                     .clip(RoundedCornerShape(24.dp))
                                     .background(
-                                        if (isSelected) ThemeBackground else Color.Transparent // Selected custom background
+                                        if (isSelected) ThemeBackground else Color.Transparent
                                     )
                                     .clickable(
                                         interactionSource = itemInteractionSource,
@@ -349,7 +349,7 @@ fun HomeScreen(viewModel: MainViewModel, activity: FragmentActivity) {
                                     Icon(
                                         imageVector = icon,
                                         contentDescription = label,
-                                        tint = if (isSelected) DarkCardSurface else TextSecondary, // Theme-compliant tint states
+                                        tint = if (isSelected) DarkCardSurface else TextSecondary,
                                         modifier = Modifier.size(20.dp)
                                     )
                                     if (isSelected) {
@@ -367,7 +367,7 @@ fun HomeScreen(viewModel: MainViewModel, activity: FragmentActivity) {
                     }
                 }
 
-                // Right circular Floating Add Button (+) - Vibrant Accent Color
+
                 Box(
                     modifier = Modifier
                         .graphicsLayer {
@@ -380,7 +380,7 @@ fun HomeScreen(viewModel: MainViewModel, activity: FragmentActivity) {
                             shape = CircleShape,
                             spotColor = Color.Black.copy(alpha = 0.2f)
                         )
-                        .background(PrimaryAccent, CircleShape) // Vibrant red accent FAB background
+                        .background(PrimaryAccent, CircleShape)
                         .clickable(
                             interactionSource = fabInteractionSource,
                             indication = LocalIndication.current
@@ -401,13 +401,13 @@ fun HomeScreen(viewModel: MainViewModel, activity: FragmentActivity) {
             }
         }
 
-        // Notifications Insights Panel - Analytics-driven
+
         if (showNotificationsDialog) {
             Dialog(onDismissRequest = { showNotificationsDialog = false }) {
                 val notificationSections = remember(expenses, budgetLimit, totalAmount) {
                     val sections = mutableListOf<Pair<String, List<NotificationItem>>>()
 
-                    // ---- Budget Alerts Section ----
+
                     val budgetAlerts = mutableListOf<NotificationItem>()
                     val percentUsed = if (budgetLimit > 0) (totalAmount / budgetLimit * 100).toInt() else 0
 
@@ -438,10 +438,10 @@ fun HomeScreen(viewModel: MainViewModel, activity: FragmentActivity) {
                     }
                     if (budgetAlerts.isNotEmpty()) sections.add("Budget Alerts" to budgetAlerts)
 
-                    // ---- Spending Analysis Section ----
+
                     val analysis = mutableListOf<NotificationItem>()
                     if (expenses.isNotEmpty()) {
-                        // Top category insight
+
                         val categoryGroups = expenses.groupBy { it.category }
                         val topCat = categoryGroups.maxByOrNull { it.value.sumOf { e -> e.amount } }
                         topCat?.let {
@@ -456,7 +456,7 @@ fun HomeScreen(viewModel: MainViewModel, activity: FragmentActivity) {
                             ))
                         }
 
-                        // Average per transaction
+
                         val avgPerTxn = totalAmount / expenses.size
                         analysis.add(NotificationItem(
                             title = "Avg. Transaction: ৳${String.format(Locale.US, "%,.0f", avgPerTxn)}",
@@ -466,7 +466,7 @@ fun HomeScreen(viewModel: MainViewModel, activity: FragmentActivity) {
                             severity = 0
                         ))
 
-                        // Category diversity
+
                         val catCount = categoryGroups.size
                         analysis.add(NotificationItem(
                             title = "$catCount Active ${if (catCount == 1) "Category" else "Categories"}",
@@ -478,7 +478,7 @@ fun HomeScreen(viewModel: MainViewModel, activity: FragmentActivity) {
                     }
                     if (analysis.isNotEmpty()) sections.add("Spending Analysis" to analysis)
 
-                    // ---- Daily Trends Section ----
+
                     val trends = mutableListOf<NotificationItem>()
                     if (expenses.isNotEmpty()) {
                         val cal = Calendar.getInstance()
@@ -507,7 +507,7 @@ fun HomeScreen(viewModel: MainViewModel, activity: FragmentActivity) {
                             ))
                         }
 
-                        // Monthly projection
+
                         val totalDaysInMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
                         val currentDay = cal.get(Calendar.DAY_OF_MONTH)
                         val monthStart = (cal.clone() as Calendar).apply {
@@ -540,10 +540,10 @@ fun HomeScreen(viewModel: MainViewModel, activity: FragmentActivity) {
                     }
                     if (trends.isNotEmpty()) sections.add("Daily Trends" to trends)
 
-                    // ---- Quick Insights Section ----
+
                     val insights = mutableListOf<NotificationItem>()
                     if (expenses.isNotEmpty()) {
-                        // Latest transaction
+
                         val latest = expenses.first()
                         val sdf = SimpleDateFormat("MMM d, h:mm a", Locale.US)
                         insights.add(NotificationItem(
@@ -554,7 +554,7 @@ fun HomeScreen(viewModel: MainViewModel, activity: FragmentActivity) {
                             severity = 0
                         ))
 
-                        // Biggest single expense
+
                         val biggest = expenses.maxByOrNull { it.amount }
                         biggest?.let {
                             insights.add(NotificationItem(
@@ -592,7 +592,7 @@ fun HomeScreen(viewModel: MainViewModel, activity: FragmentActivity) {
                             .fillMaxWidth()
                             .padding(20.dp)
                     ) {
-                        // Header
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -631,7 +631,7 @@ fun HomeScreen(viewModel: MainViewModel, activity: FragmentActivity) {
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // Scrollable content
+
                         LazyColumn(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -668,9 +668,9 @@ fun HomeScreen(viewModel: MainViewModel, activity: FragmentActivity) {
     }
 }
 
-// NavBarItemCustom removed in favor of direct redesigned navigation tabs
 
-// ==================== HOME TAB VIEW (Redesigned matching EarnDaily) ====================
+
+
 @Composable
 fun HomeTab(
     viewModel: MainViewModel,
@@ -694,7 +694,7 @@ fun HomeTab(
         label = "bellScale"
     )
 
-    // Red badge pulse animation (beeping look)
+
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val pulseScale by infiniteTransition.animateFloat(
         initialValue = 1f,
@@ -715,7 +715,7 @@ fun HomeTab(
         label = "pulseAlpha"
     )
 
-    // Subtle tilting bell animation if there are unread notifications
+
     val bellRotation by if (hasUnreadNotifications) {
         val rotationTransition = rememberInfiniteTransition(label = "bellRotation")
         rotationTransition.animateFloat(
@@ -739,7 +739,7 @@ fun HomeTab(
         contentPadding = PaddingValues(bottom = bottomPadding, top = 24.dp)
     ) {
         item {
-            // 1. Redesigned Clean Header Row (Directly on Background, No Card)
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -771,7 +771,7 @@ fun HomeTab(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Settings icon or profile image
+
                     Box(
                         modifier = Modifier
                             .size(44.dp)
@@ -797,7 +797,7 @@ fun HomeTab(
                         }
                     }
 
-                    // Bell Notifications icon
+
                     Box(
                         contentAlignment = Alignment.Center
                     ) {
@@ -826,9 +826,9 @@ fun HomeTab(
                             )
                         }
 
-                        // Red dot for unread notifications - placed OUTSIDE the clickable Box to prevent clipping
+
                         if (hasUnreadNotifications) {
-                            // Pulsing glow ring
+
                             Box(
                                 modifier = Modifier
                                     .align(Alignment.TopEnd)
@@ -841,7 +841,7 @@ fun HomeTab(
                                     }
                                     .background(PrimaryAccent, CircleShape)
                             )
-                            // Solid red dot
+
                             Box(
                                 modifier = Modifier
                                     .align(Alignment.TopEnd)
@@ -855,7 +855,7 @@ fun HomeTab(
                 }
             }
 
-            // 2. Spent Balance Typography directly on background (No Card container)
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -895,7 +895,7 @@ fun HomeTab(
                 )
             }
 
-            // 3. Spending Graph in Dark Container Card (#020203)
+
             Card(
                 shape = RoundedCornerShape(28.dp),
                 colors = CardDefaults.cardColors(containerColor = DarkCardSurface),
@@ -927,7 +927,7 @@ fun HomeTab(
                             )
                         }
 
-                        // Selector pill
+
                         Row(
                             modifier = Modifier
                                 .background(Color(0xFF1E1E22), RoundedCornerShape(12.dp))
@@ -949,7 +949,7 @@ fun HomeTab(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Compute last 7 days data for HomeTab chart
+
                     val cal = Calendar.getInstance()
                     val home7DaysData = remember(expenses) {
                         val result = mutableListOf<Pair<String, Double>>()
@@ -983,7 +983,7 @@ fun HomeTab(
                 }
             }
 
-            // 4. Redesigned Updates Pill Banner (using CardSurface background, no white)
+
             Card(
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(containerColor = CardSurface),
@@ -1061,7 +1061,7 @@ fun HomeTab(
                 }
             }
 
-            // 5. Quick Spend Category Hub
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1144,7 +1144,7 @@ fun HomeTab(
                 }
             }
 
-            // 6. Recent Transactions Header (with Today pill / dropdown arrow on the right)
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1216,13 +1216,13 @@ fun HomeTab(
     }
 }
 
-// ==================== ANALYTICS TAB VIEW (Deep Analysis Dashboard) ====================
+
 @Composable
 fun AnalyticsTab(
     expenses: List<Expense>,
     budgetLimit: Double
 ) {
-    // ---- Computed analytics data ----
+
     val totalSpent = remember(expenses) { expenses.sumOf { it.amount } }
 
     val categoryData = remember(expenses) {
@@ -1233,7 +1233,7 @@ fun AnalyticsTab(
 
     val topCategory = remember(categoryData) { categoryData.firstOrNull() }
 
-    // Days since first expense (for daily average)
+
     val daysSinceFirst = remember(expenses) {
         if (expenses.isEmpty()) 1
         else {
@@ -1244,7 +1244,7 @@ fun AnalyticsTab(
     }
     val dailyAvg = remember(totalSpent, daysSinceFirst) { totalSpent / daysSinceFirst }
 
-    // Daily spending for the last 7 days
+
     val last7DaysData = remember(expenses) {
         val cal = Calendar.getInstance()
         val today = cal.clone() as Calendar
@@ -1270,7 +1270,7 @@ fun AnalyticsTab(
         result
     }
 
-    // Monthly projection & savings
+
     val monthlyProjection = remember(expenses) {
         val cal = Calendar.getInstance()
         val totalDaysInMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
@@ -1289,10 +1289,10 @@ fun AnalyticsTab(
         Triple(thisMonthSpent, projected, predictedSavings)
     }
 
-    // Biggest single expense
+
     val biggestExpense = remember(expenses) { expenses.maxByOrNull { it.amount } }
 
-    // Most active day of week
+
     val mostActiveDay = remember(expenses) {
         if (expenses.isEmpty()) null
         else {
@@ -1303,12 +1303,12 @@ fun AnalyticsTab(
         }
     }
 
-    // Average per transaction
+
     val avgPerTransaction = remember(expenses) {
         if (expenses.isEmpty()) 0.0 else totalSpent / expenses.size
     }
 
-    // Chart colors
+
     val chartColors = listOf(
         Color(0xFF3B82F6), Color(0xFF8B5CF6), Color(0xFFEC4899),
         Color(0xFFF59E0B), Color(0xFF10B981), Color(0xFF06B6D4),
@@ -1322,7 +1322,7 @@ fun AnalyticsTab(
             .padding(horizontal = 20.dp),
         contentPadding = PaddingValues(bottom = bottomPadding, top = 24.dp)
     ) {
-        // ---- Header ----
+
         item {
             Text(
                 text = "Spending Analytics",
@@ -1380,7 +1380,7 @@ fun AnalyticsTab(
                 }
             }
         } else {
-            // ---- Card 1: Summary Overview (3 metric tiles) ----
+
             item {
                 Card(
                     shape = RoundedCornerShape(28.dp),
@@ -1407,7 +1407,7 @@ fun AnalyticsTab(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            // Total Spent
+
                             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = "৳${String.format(Locale.US, "%,.0f", totalSpent)}",
@@ -1417,9 +1417,9 @@ fun AnalyticsTab(
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text("Total Spent", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
                             }
-                            // Divider
+
                             Box(modifier = Modifier.width(1.dp).height(48.dp).background(ThemeBackground))
-                            // Daily Avg
+
                             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = "৳${String.format(Locale.US, "%,.0f", dailyAvg)}",
@@ -1429,9 +1429,9 @@ fun AnalyticsTab(
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text("Daily Avg", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
                             }
-                            // Divider
+
                             Box(modifier = Modifier.width(1.dp).height(48.dp).background(ThemeBackground))
-                            // Transactions
+
                             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = "${expenses.size}",
@@ -1446,7 +1446,7 @@ fun AnalyticsTab(
                 }
             }
 
-            // ---- Card 2: Top Spending Category ----
+
             item {
                 topCategory?.let { (catName, catAmount) ->
                     val style = getCategoryStyle(catName)
@@ -1499,7 +1499,7 @@ fun AnalyticsTab(
                                     color = style.third
                                 )
                             }
-                            // Progress bar showing share
+
                             Spacer(modifier = Modifier.height(16.dp))
                             Box(
                                 modifier = Modifier
@@ -1522,7 +1522,7 @@ fun AnalyticsTab(
                 }
             }
 
-            // ---- Card 3: Category Breakdown ----
+
             item {
                 Card(
                     shape = RoundedCornerShape(28.dp),
@@ -1586,7 +1586,7 @@ fun AnalyticsTab(
                 }
             }
 
-            // ---- Card 4: Daily Spending Trend (Bézier Line Chart Directly on the Background) ----
+
             item {
                 Column(
                     modifier = Modifier
@@ -1614,7 +1614,7 @@ fun AnalyticsTab(
                             )
                         }
 
-                        // Selectors row
+
                         Row(
                             modifier = Modifier
                                 .background(CardSurface, RoundedCornerShape(12.dp))
@@ -1638,7 +1638,7 @@ fun AnalyticsTab(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Draw SmoothLineChart directly on background: lineColor = Near Black, dotColor = Red
+
                     SmoothLineChart(
                         data = last7DaysData,
                         lineColor = TextPrimary,
@@ -1650,7 +1650,7 @@ fun AnalyticsTab(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Day labels
+
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                         last7DaysData.forEach { (day, _) ->
                             Text(
@@ -1665,7 +1665,7 @@ fun AnalyticsTab(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Highest / lowest day summary
+
                     val highDay = last7DaysData.maxByOrNull { it.second }
                     val lowDay = last7DaysData.filter { it.second > 0.0 }.minByOrNull { it.second }
                     Row(
@@ -1701,7 +1701,7 @@ fun AnalyticsTab(
                 }
             }
 
-            // ---- Card 5: Monthly Savings Prediction ----
+
             item {
                 val (thisMonthSpent, projected, predictedSavings) = monthlyProjection
                 val isOnTrack = predictedSavings >= 0
@@ -1710,7 +1710,7 @@ fun AnalyticsTab(
                 val currentDayOfMonth = cal.get(java.util.Calendar.DAY_OF_MONTH)
                 val dailyRate = if (currentDayOfMonth > 0) thisMonthSpent / currentDayOfMonth else 0.0
 
-                // Redesigned visual progress scale logic
+
                 val totalScale = maxOf(budgetLimit, projected)
                 val actualFraction = if (totalScale > 0) (thisMonthSpent / totalScale).toFloat().coerceIn(0f, 1f) else 0f
                 val projectedFraction = if (totalScale > 0) (projected / totalScale).toFloat().coerceIn(0f, 1f) else 0f
@@ -1724,7 +1724,7 @@ fun AnalyticsTab(
                         .padding(bottom = 16.dp)
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
-                        // Title & Icon Header
+
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(
                                 modifier = Modifier
@@ -1756,7 +1756,7 @@ fun AnalyticsTab(
                         
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        // Visual Progress Gauge (Double-segment progress bar)
+
                         Column {
                             Row(
                                 modifier = Modifier.fillMaxWidth(), 
@@ -1777,21 +1777,21 @@ fun AnalyticsTab(
                             
                             Spacer(modifier = Modifier.height(10.dp))
                             
-                            // Visual Stack (Track -> Forecast Extension -> Actual -> Limit Line Marker)
+
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(20.dp),
                                 contentAlignment = Alignment.CenterStart
                             ) {
-                                // Background Track
+
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(8.dp)
                                         .background(ThemeBackground, RoundedCornerShape(4.dp))
                                 )
-                                // Lighter/Translucent forecasted segment
+
                                 if (projectedFraction > 0f) {
                                     Box(
                                         modifier = Modifier
@@ -1803,7 +1803,7 @@ fun AnalyticsTab(
                                             )
                                     )
                                 }
-                                // Solid actual spent segment
+
                                 if (actualFraction > 0f) {
                                     Box(
                                         modifier = Modifier
@@ -1815,7 +1815,7 @@ fun AnalyticsTab(
                                             )
                                     )
                                 }
-                                // Budget threshold vertical marker line
+
                                 if (budgetFraction > 0f) {
                                     Box(
                                         modifier = Modifier
@@ -1835,7 +1835,7 @@ fun AnalyticsTab(
                             
                             Spacer(modifier = Modifier.height(6.dp))
 
-                            // Bottom Labels for Progress Bar
+
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
@@ -1854,7 +1854,7 @@ fun AnalyticsTab(
                             
                             Spacer(modifier = Modifier.height(8.dp))
 
-                            // Visual legend explaining the bar components
+
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
@@ -1892,7 +1892,7 @@ fun AnalyticsTab(
 
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        // Stats Breakdown Row (Daily speed, projected total, expected savings/overrun)
+
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -1901,7 +1901,7 @@ fun AnalyticsTab(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Column 1: Daily Pace
+
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 modifier = Modifier.weight(1f)
@@ -1927,7 +1927,7 @@ fun AnalyticsTab(
                             
                             Box(modifier = Modifier.width(1.dp).height(32.dp).background(CardSurface))
 
-                            // Column 2: Projected Total Spend
+
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 modifier = Modifier.weight(1f)
@@ -1953,7 +1953,7 @@ fun AnalyticsTab(
                             
                             Box(modifier = Modifier.width(1.dp).height(32.dp).background(CardSurface))
 
-                            // Column 3: Expected Outcome (Savings / Overrun)
+
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 modifier = Modifier.weight(1f)
@@ -1980,7 +1980,7 @@ fun AnalyticsTab(
 
                         Spacer(modifier = Modifier.height(20.dp))
 
-                        // Actionable Advice Banner
+
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -2019,7 +2019,7 @@ fun AnalyticsTab(
                 }
             }
 
-            // ---- Card 6: Spending Insights ----
+
             item {
                 Card(
                     shape = RoundedCornerShape(28.dp),
@@ -2043,7 +2043,7 @@ fun AnalyticsTab(
                         }
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // Biggest Expense
+
                         biggestExpense?.let { exp ->
                             InsightRow(
                                 icon = Icons.Rounded.Receipt,
@@ -2057,7 +2057,7 @@ fun AnalyticsTab(
 
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        // Most Active Day
+
                         mostActiveDay?.let { (day, count) ->
                             InsightRow(
                                 icon = Icons.Rounded.CalendarMonth,
@@ -2071,7 +2071,7 @@ fun AnalyticsTab(
 
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        // Average per Transaction
+
                         InsightRow(
                             icon = Icons.Rounded.Calculate,
                             iconBg = ThemeBackground,
@@ -2083,7 +2083,7 @@ fun AnalyticsTab(
 
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        // Category Count
+
                         InsightRow(
                             icon = Icons.Rounded.Category,
                             iconBg = ThemeBackground,
@@ -2099,7 +2099,7 @@ fun AnalyticsTab(
     }
 }
 
-// ---- Insight Row helper ----
+
 @Composable
 private fun InsightRow(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
@@ -2134,7 +2134,7 @@ private fun InsightRow(
     }
 }
 
-// ==================== HISTORY & FILTER TAB VIEW (Clean light style) ====================
+
 @Composable
 fun HistoryTab(
     expenses: List<Expense>,
@@ -2202,23 +2202,25 @@ fun HistoryTab(
         ExcelImportGuideDialog(
             onDismiss = { showImportGuide = false },
             onChooseFile = {
-                importLauncher.launch("*/*")
+                onRequestStoragePermission {
+                    importLauncher.launch("*/*")
+                }
             }
         )
     }
 
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("All") }
-    var sortBy by remember { mutableStateOf("date_desc") } // "date_desc", "date_asc", "amount_desc", "amount_asc"
-    var dateFilter by remember { mutableStateOf("all") } // "all", "today", "week", "month"
-    var amountFilter by remember { mutableStateOf("all") } // "all", "low", "medium", "high"
+    var sortBy by remember { mutableStateOf("date_desc") }
+    var dateFilter by remember { mutableStateOf("all") }
+    var amountFilter by remember { mutableStateOf("all") }
 
     val categories = remember(expenses) {
         listOf("All") + expenses.map { it.category }.distinct()
     }
 
     val filteredExpenses = remember(searchQuery, selectedCategory, dateFilter, amountFilter, sortBy, expenses) {
-        // Define timeframe limits
+
         val todayStart = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 0)
             set(Calendar.MINUTE, 0)
@@ -2264,7 +2266,7 @@ fun HistoryTab(
                 "date_asc" -> a.date.compareTo(b.date)
                 "amount_desc" -> b.amount.compareTo(a.amount)
                 "amount_asc" -> a.amount.compareTo(b.amount)
-                else -> b.date.compareTo(a.date) // "date_desc"
+                else -> b.date.compareTo(a.date)
             }
         }
     }
@@ -2296,7 +2298,7 @@ fun HistoryTab(
                 .padding(bottom = 16.dp, top = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Import Logs Button
+
             Button(
                 onClick = { showImportGuide = true },
                 modifier = Modifier.weight(1f),
@@ -2329,13 +2331,15 @@ fun HistoryTab(
                 }
             }
 
-            // Export Logs Button
+
             Button(
                 onClick = {
                     if (expenses.isEmpty()) {
                         Toast.makeText(context, "No transactions to export", Toast.LENGTH_SHORT).show()
                     } else {
-                        exportLauncher.launch("expenses_export.xls")
+                        onRequestStoragePermission {
+                            exportLauncher.launch("expenses_export.xls")
+                        }
                     }
                 },
                 modifier = Modifier.weight(1f),
@@ -2380,14 +2384,14 @@ fun HistoryTab(
             )
         )
 
-        // Sorting & Filtering Row
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Sort Dropdown
+
             var sortMenuExpanded by remember { mutableStateOf(false) }
             Box(modifier = Modifier.weight(1f)) {
                 OutlinedButton(
@@ -2466,7 +2470,7 @@ fun HistoryTab(
                 }
             }
 
-            // Timeframe Dropdown
+
             var dateMenuExpanded by remember { mutableStateOf(false) }
             Box(modifier = Modifier.weight(1f)) {
                 OutlinedButton(
@@ -2545,7 +2549,7 @@ fun HistoryTab(
                 }
             }
 
-            // Amount Dropdown
+
             var amountMenuExpanded by remember { mutableStateOf(false) }
             Box(modifier = Modifier.weight(1f)) {
                 OutlinedButton(
@@ -2727,7 +2731,7 @@ fun ExcelImportGuideDialog(
                     color = TextSecondary
                 )
 
-                // Mock visual representation of the Excel sheet columns
+
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -2735,7 +2739,7 @@ fun ExcelImportGuideDialog(
                         .padding(12.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Header Row representation
+
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -2755,7 +2759,7 @@ fun ExcelImportGuideDialog(
                         }
                     }
                     
-                    // Sample Data Row 1
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -2771,10 +2775,10 @@ fun ExcelImportGuideDialog(
                         }
                     }
                     
-                    // Divider
+
                     Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(TextSecondary.copy(alpha = 0.1f)))
 
-                    // Sample Data Row 2
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -2791,7 +2795,7 @@ fun ExcelImportGuideDialog(
                     }
                 }
 
-                // Instructions points
+
                 Column(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.padding(vertical = 4.dp)
@@ -2856,7 +2860,7 @@ fun BulletPoint(text: String) {
     }
 }
 
-// ==================== PROFILE / SETTINGS TAB VIEW (Clean light style) ====================
+
 @Composable
 fun ProfileTab(
     viewModel: MainViewModel,
@@ -2979,7 +2983,7 @@ fun ProfileTab(
                             )
                         }
                         
-                        // Camera edit overlay at the bottom of the circle
+
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -3170,7 +3174,7 @@ fun ProfileTab(
             }
         }
 
-        // Developer Attribution Footer (Elegant Clean Styling, No Emojis)
+
         item {
             Card(
                 shape = RoundedCornerShape(20.dp),
@@ -3335,7 +3339,7 @@ fun ProfileTab(
     }
 }
 
-// ==================== COMMON EXPENSE ITEM ====================
+
 @Composable
 fun ExpenseItem(expense: Expense, onDelete: () -> Unit) {
     val dateFormat = SimpleDateFormat("MMM dd, yyyy, h:mm a", Locale.US)
@@ -3470,7 +3474,7 @@ fun DeveloperActionButton(
     }
 }
 
-// ==================== CATEGORY STYLING HELPER ====================
+
 fun getCategoryStyle(category: String): Triple<androidx.compose.ui.graphics.vector.ImageVector, Color, Color> {
     val cleanCategory = category.lowercase(Locale.US).trim()
     val icon = when (cleanCategory) {
@@ -3498,24 +3502,24 @@ fun getCategoryStyle(category: String): Triple<androidx.compose.ui.graphics.vect
         }
     }
     
-    // Choose from our palette tints: Accent Red, Near Black, and Muted Gray
+
     val tints = listOf(PrimaryAccent, TextPrimary, TextSecondary)
     val tint = tints[Math.abs(category.hashCode()) % tints.size]
     
-    // Background is always our card surface grey (#E5E5E2)
+
     return Triple(icon, CardSurface, tint)
 }
 
-// ==================== NOTIFICATION DATA CLASS ====================
+
 data class NotificationItem(
     val title: String,
     val text: String,
     val icon: androidx.compose.ui.graphics.vector.ImageVector,
     val color: Color,
-    val severity: Int = 0 // 0=info, 1=warning, 2=critical
+    val severity: Int = 0
 )
 
-// ==================== NOTIFICATION CARD COMPOSABLE ====================
+
 @Composable
 private fun NotificationCard(item: NotificationItem) {
     Surface(

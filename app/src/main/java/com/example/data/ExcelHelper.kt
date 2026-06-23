@@ -56,13 +56,13 @@ object ExcelHelper {
 
         val rowIterator = sheet.iterator()
         if (rowIterator.hasNext()) {
-            rowIterator.next() // Skip header row
+            rowIterator.next()
         }
 
         while (rowIterator.hasNext()) {
             val row = rowIterator.next()
             
-            // Check if row is entirely empty
+
             if (isRowEmpty(row)) continue
 
             val dateCell = row.getCell(dateColIndex)
@@ -70,19 +70,19 @@ object ExcelHelper {
             val descriptionCell = row.getCell(descriptionColIndex)
             val amountCell = row.getCell(amountColIndex)
 
-            // Parse Amount
-            val amount = getCellValueAsDouble(amountCell) ?: continue // Skip rows with invalid or empty amount
-            if (amount <= 0.0) continue // Skip invalid amounts
 
-            // Parse Date
+            val amount = getCellValueAsDouble(amountCell) ?: continue
+            if (amount <= 0.0) continue
+
+
             val dateMs = getCellValueAsDateMs(dateCell) ?: System.currentTimeMillis()
 
-            // Parse Category & Description
+
             val category = getCellValueAsString(categoryCell).trim()
             val description = getCellValueAsString(descriptionCell).trim()
 
             if (category.isEmpty() && description.isEmpty() && amount == 0.0) {
-                continue // Skip empty-looking row
+                continue
             }
 
             val finalCategory = if (category.isEmpty()) "Other" else category
@@ -106,7 +106,7 @@ object ExcelHelper {
         val workbook = HSSFWorkbook()
         val sheet = workbook.createSheet("Expenses")
 
-        // Header Row
+
         val headerRow = sheet.createRow(0)
         val headers = listOf("Date", "Category", "Description", "Amount")
         for (i in headers.indices) {
@@ -114,30 +114,30 @@ object ExcelHelper {
             cell.setCellValue(headers[i])
         }
 
-        // Data Rows
+
         var rowIndex = 1
         val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)
         for (expense in expenses) {
             val row = sheet.createRow(rowIndex++)
 
-            // Date (write formatted string directly)
+
             row.createCell(0).setCellValue(sdf.format(Date(expense.date)))
 
-            // Category
+
             row.createCell(1).setCellValue(expense.category)
 
-            // Description
+
             row.createCell(2).setCellValue(expense.description)
 
-            // Amount
+
             row.createCell(3).setCellValue(expense.amount)
         }
 
-        // Set manual column widths (in characters * 256) to avoid AWT autoSizeColumn crashes on Android
-        sheet.setColumnWidth(0, 20 * 256) // Date (approx. 19 chars)
-        sheet.setColumnWidth(1, 15 * 256) // Category
-        sheet.setColumnWidth(2, 30 * 256) // Description
-        sheet.setColumnWidth(3, 15 * 256) // Amount (approx. 12 chars + extra padding)
+
+        sheet.setColumnWidth(0, 20 * 256)
+        sheet.setColumnWidth(1, 15 * 256)
+        sheet.setColumnWidth(2, 30 * 256)
+        sheet.setColumnWidth(3, 15 * 256)
 
         workbook.write(outputStream)
         workbook.close()
@@ -204,34 +204,34 @@ object ExcelHelper {
                 if (DateUtil.isCellDateFormatted(cell)) {
                     return cell.dateCellValue.time
                 }
-                // Try treating numeric value as Excel serial date or raw millis timestamp
+
                 val num = cell.numericCellValue
-                if (num > 1000000000000L) { // Looks like Unix timestamp in ms
+                if (num > 1000000000000L) {
                     return num.toLong()
-                } else if (num > 1000000000L) { // Looks like Unix timestamp in seconds
+                } else if (num > 1000000000L) {
                     return num.toLong() * 1000L
-                } else { // Excel Serial Date
+                } else {
                     try {
                         return DateUtil.getJavaDate(num).time
                     } catch (e: Exception) {
-                        // ignore
+
                     }
                 }
             }
             CellType.STRING -> {
                 val str = cell.stringCellValue.trim()
                 if (str.isEmpty()) return null
-                // Try parsing Unix timestamp
+
                 str.toLongOrNull()?.let {
                     if (it > 1000000000000L) return it
                     if (it > 1000000000L) return it * 1000L
                 }
-                // Try simple date format parsers
+
                 for (df in dateFormats) {
                     try {
                         return df.parse(str)?.time
                     } catch (e: Exception) {
-                        // Continue
+
                     }
                 }
             }

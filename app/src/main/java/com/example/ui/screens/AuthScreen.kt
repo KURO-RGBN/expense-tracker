@@ -29,7 +29,7 @@ fun AuthScreen(activity: FragmentActivity, onAuthenticated: () -> Unit) {
     var errorMsg by remember { mutableStateOf("") }
     var hardwareSupported by remember { mutableStateOf(true) }
     
-    // Auto-prompt biometric scanner on launch
+
     LaunchedEffect(Unit) {
         if (BiometricHelper.canAuthenticate(activity)) {
             BiometricHelper.authenticate(
@@ -48,7 +48,7 @@ fun AuthScreen(activity: FragmentActivity, onAuthenticated: () -> Unit) {
             .fillMaxSize()
             .background(ThemeBackground)
     ) {
-        // High-end blur blobs background (with dark zinc and vibrant red accents)
+
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
@@ -79,7 +79,7 @@ fun AuthScreen(activity: FragmentActivity, onAuthenticated: () -> Unit) {
                         .padding(32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Lock Emblem inside customized glass frame
+
                     GlassBox(
                         modifier = Modifier.size(80.dp),
                         shape = CircleShape,
@@ -146,7 +146,7 @@ fun AuthScreen(activity: FragmentActivity, onAuthenticated: () -> Unit) {
                             }
                         }
                     } else {
-                        // Safe fallback bypass if device has no biometric capabilities
+
                         Button(
                             onClick = onAuthenticated,
                             modifier = Modifier

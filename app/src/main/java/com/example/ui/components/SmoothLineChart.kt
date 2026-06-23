@@ -22,7 +22,7 @@ fun SmoothLineChart(
     lineColor: Color = Color.White,
     gridColor: Color = Color.White.copy(alpha = 0.12f),
     drawDot: Boolean = true,
-    dotColor: Color = Color(0xFFEA3B35), // Vibrant Red
+    dotColor: Color = Color(0xFFEA3B35),
     drawTooltip: Boolean = true
 ) {
     if (data.isEmpty()) return
@@ -36,7 +36,7 @@ fun SmoothLineChart(
         val width = size.width
         val height = size.height
 
-        // Horizontal grid lines
+
         val gridLines = 3
         for (i in 0..gridLines) {
             val y = height * 0.15f + (height * 0.7f) * (i.toFloat() / gridLines)
@@ -48,7 +48,7 @@ fun SmoothLineChart(
             )
         }
 
-        // Compute point coordinates
+
         val points = data.mapIndexed { index, pair ->
             val x = if (data.size > 1) {
                 width * 0.05f + (width * 0.9f) * (index.toFloat() / (data.size - 1))
@@ -80,28 +80,28 @@ fun SmoothLineChart(
                 style = Stroke(width = 3.dp.toPx())
             )
 
-            // Draw selection dot and tooltip on one of the points
+
             if (drawDot) {
-                // Focus on the second to last index, or last index
+
                 val targetIndex = (points.size - 2).coerceAtLeast(0)
                 if (targetIndex < points.size) {
                     val dotPoint = points[targetIndex]
                     val amount = data[targetIndex].second
 
-                    // Pulse outer ring
+
                     drawCircle(
                         color = dotColor.copy(alpha = 0.25f),
                         radius = 8.dp.toPx(),
                         center = dotPoint
                     )
-                    // Inner solid dot
+
                     drawCircle(
                         color = dotColor,
                         radius = 4.dp.toPx(),
                         center = dotPoint
                     )
 
-                    // Red tooltip tag
+
                     if (drawTooltip) {
                         drawIntoCanvas { canvas ->
                             val paint = Paint().apply {
@@ -124,7 +124,7 @@ fun SmoothLineChart(
                             val rx = dotPoint.x
                             val ry = dotPoint.y - 20.dp.toPx()
 
-                            // Tooltip box
+
                             canvas.nativeCanvas.drawRoundRect(
                                 rx - rectWidth / 2f,
                                 ry - rectHeight / 2f,
@@ -135,7 +135,7 @@ fun SmoothLineChart(
                                 paint
                             )
 
-                            // Tooltip text
+
                             canvas.nativeCanvas.drawText(
                                 tooltipText,
                                 rx,

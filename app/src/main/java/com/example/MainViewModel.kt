@@ -25,7 +25,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val budgetLimit = MutableStateFlow(prefs.getFloat("budget_limit", 6000.0f).toDouble())
     val biometricsEnabled = MutableStateFlow(prefs.getBoolean("biometrics_enabled", false))
     
-    // Premium customizable visual gradient themes
     val themeSelection = MutableStateFlow(prefs.getString("theme_selection", "Neon Aurora") ?: "Neon Aurora")
     val notificationsLastViewedTime = MutableStateFlow(prefs.getLong("notifications_last_viewed", 0L))
 
@@ -33,7 +32,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         database = AppDatabase.getDatabase(application)
         repository = ExpenseRepository(database.expenseDao())
         
-        // Default authentication state on app boot
         if (!biometricsEnabled.value) {
             isAuthenticated.value = true
         }
@@ -109,7 +107,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val date = System.currentTimeMillis()
             val newExpense = Expense(amount = amount, description = description, category = category, date = date)
             
-            // Calculate totals before inserting the new one
             val currentExpenses = expenses.value
             val oldTotal = currentExpenses.sumOf { it.amount }
             val newTotal = oldTotal + amount
@@ -117,7 +114,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
             repository.insert(newExpense)
 
-            // Trigger live notification for transaction added
             val formattedAmount = String.format(java.util.Locale.US, "%,.2f", amount)
             NotificationHelper.triggerLiveNotification(
                 getApplication(),
@@ -125,7 +121,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 "Successfully added: ৳$formattedAmount for $description ($category)"
             )
 
-            // Trigger budget overrun or high spending (80%) warning notifications
             if (newTotal > limit && oldTotal <= limit) {
                 val formattedLimit = String.format(java.util.Locale.US, "%,.2f", limit)
                 val formattedNewTotal = String.format(java.util.Locale.US, "%,.2f", newTotal)
@@ -190,13 +185,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun resetAllData() {
         viewModelScope.launch {
-            // Wipes SQLite Room database tables
             database.clearAllTables()
-            
-            // Clears all keys from local app SharedPreferences
             prefs.edit().clear().apply()
-            
-            // Wipes state values and resets to defaults
             isFirstLaunch.value = true
             userName.value = "Azwad"
             profileImageUri.value = null
